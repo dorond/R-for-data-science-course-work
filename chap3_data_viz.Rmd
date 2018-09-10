@@ -249,5 +249,92 @@ ggplot(mpg, aes(displ, hwy)) +
   geom_point(shape = "circle open", color = "white", stroke = 3) 
 ```
 
+## Exercises 3.7.1
+
+> What is the default geom associated with `stat_summary()`? How could you rewrite the previous plot to use that geom function instead of the stat function?
+
+geom_histogram/geom_freqpoly
+
+```{r}
+ggplot(data = diamonds) + 
+  stat_summary(
+    mapping = aes(x = cut, y = depth),
+    fun.ymin = min,
+    fun.ymax = max,
+    fun.y = median
+  )
+
+ggplot(data = diamonds) +
+  geom_pointrange(
+    mapping = aes(x = cut, y = depth),
+    stat = "summary",
+    fun.ymin = min,
+    fun.ymax = max,
+    fun.y = median
+  )
+
+```
+
+> What does geom_col() do? How is it different to geom_bar()?
+
+geom_col is used when the values in the data represent the actual heights of the bar. geom_bar is better when the heights of the bar are to be computed from the data.
+
+> Most geoms and stats come in pairs that are almost always used in concert. Read through the documentation and make a list of all the pairs. What do they have in common?
+
+TODO
+
+> What variables does stat_smooth() compute? What parameters control its behaviour?
+
+It computes a linear regession model between the variables, an attempt to fit the the data to a smooth curve. It's controlled by its method of computation, the number of points to evaluate for the smoother and various others.
+
+> In our proportion bar chart, we need to set group = 1. Why? In other words what is the problem with these two graphs?
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = ..prop..))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = color, y = ..prop..))
+```
+
+If group is not set to 1, then all the bars have prop == 1. The function geom_bar() assumes that the groups are equal to the x values, since the stat computes the counts within the group.
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = ..prop.., group = 1))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = color, y = ..prop.., group = color))
+```
+
+## Exercises 3.8.1
+
+> What is the problem with this plot? How could you improve it?
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point()
+```
+
+There is overlap on many points, we can add jitter to improve it.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point(position = "jitter")
+```
+
+> What parameters to geom_jitter() control the amount of jittering?
+
+`width` and `height` control the horizontal and vertical jitter respectively. Th jitter is added in both directions, i.e. left and right for width and top and bottom for height. 
+
+> Compare and contrast geom_jitter() with geom_count()
+
+geom_count counts overlapping points. It gives you a sense of how much overplotting occurs at a specific point.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_count()
+```
 
 
+> What’s the default position adjustment for geom_boxplot()? Create a visualisation of the mpg dataset that demonstrates it.
+
+Default positions is `dodge2` which preserves the vertical position of an geom while adjusting the horizontal position.
