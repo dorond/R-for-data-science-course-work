@@ -1,0 +1,115 @@
+---
+title: 'Chapter 5: Data Transformation'
+author: "Doron Dusheiko"
+date: "10 September 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(nycflights13)
+```
+## Exercises 5.2.4
+
+> Find all flights that had an arrival delay of two or more hours
+
+```{r}
+flights
+```
+
+```{r}
+flights %>%
+  filter(arr_delay >= 120)
+```
+
+> Flew to Houston (IAH or HOU)
+
+```{r}
+flights %>%
+  filter(dest %in% c("IAH", "HOU"))
+```
+
+> Were operated by United, American, or Delta
+
+Method 1: 
+
+```{r}
+ codes <- airlines %>% 
+  filter(grepl("United|American|Delta", name)) %>%
+  select(carrier)
+
+flights %>% 
+  filter(carrier %in% codes$carrier)
+
+```
+
+Method 2: using joins
+
+```{r}
+flights %>%
+  inner_join(airlines, by = "carrier") %>%
+  filter(grepl("United|American|Delta", name))
+```
+
+> Departed in summer (July, August, and September)
+
+```{r}
+flights %>%
+  filter(month %in% c(7, 8, 9))
+```
+
+> Arrived more than two hours late, but didn’t leave late
+
+```{r}
+flights %>%
+  filter(arr_delay > 120, dep_delay <= 0)
+```
+
+> Were delayed by at least an hour, but made up over 30 minutes in flight
+
+```{r}
+flights %>%
+  filter(dep_delay >= 60, dep_delay - arr_delay > 30)
+```
+
+> Departed between midnight and 6am (inclusive)
+
+```{r}
+flights %>%
+  filter(dep_time <= 600 | dep_time == 2400)
+```
+
+> Another useful dplyr filtering helper is between(). What does it do? Can you use it to simplify the code needed to answer the previous challenges?
+
+```{r}
+flights %>%
+  filter(between(month, 7, 9))
+```
+
+> How many flights have a missing dep_time? What other variables are missing? What might these rows represent?
+
+```{r}
+sum(is.na(flights$dep_time))
+```
+
+```{r}
+count_missing <- function(col) {
+  sum(is.na(col))
+}
+
+flights %>%
+  map_int(count_missing) %>%
+  sort.int(decreasing = TRUE)
+
+```
+
+> Why is NA ^ 0 not missing? Why is NA | TRUE not missing? Why is FALSE & NA not missing? Can you figure out the general rule? (NA * 0 is a tricky counterexample!)
+
+```{r}
+NA ^ 0
+NA | TRUE
+FALSE & NA
+NA * 0
+```
+
